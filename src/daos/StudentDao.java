@@ -10,6 +10,6 @@ public interface StudentDao<T> {
 	public boolean updateStudent(T student);
 	public boolean deleteStudent(T student);
 	
-	public List<T> getStudentsInEmne(Subject emne);
-	public void addStudentToEmne(T student, Subject emne);
+	public List<T> getStudentsInSubject(Subject emne);
+	public void addStudentToSubject(T student, Subject emne);
 }

@@ -6,6 +6,12 @@ import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 
+/*
+ * Database connection class.
+ * Public methods:
+ * 			establishConnection()
+ * 			closeAllConnections()
+ */
 public class DBConnection {
 	Connection connection;
 	Statement statement;
@@ -14,13 +20,16 @@ public class DBConnection {
 	
 	private String dbName, username, password;
 	
+	/*
+	 * Registers the driver
+	 */
 	public DBConnection(String dbName, String username, String password) {
 		this.dbName = dbName;
 		this.username = username;
 		this.password = password;
 		connection = null;
 		try {
-			Class.forName("org.postgresql.Driver"); // register the driver
+			Class.forName("org.postgresql.Driver"); 
 		} catch (Exception e) {
 			System.out.println(e);
 		}
@@ -36,6 +45,33 @@ public class DBConnection {
 	}
 	
 	
+	public void closeAllConnections() {
+		try {
+			if(statement != null)
+				statement.close();
+			if(prepStmnt != null)
+				prepStmnt.close();
+			if(resultSet != null)
+				resultSet.close();
+			if(connection != null) 
+				connection.close();
+			
+		} catch (SQLException e) {
+			System.out.println("Error in closing connection... " + e);
+		}
+	}
+	
+	private void closeStatement() {
+		try {
+			statement.close();
+		} catch (SQLException e) {
+			System.out.println("Error in closing statement " + e);
+		}
+	}
+	
+	
+	
+	/*
 	public void getAllData() {
 		String query = "select * from students";
 		try {
@@ -59,30 +95,6 @@ public class DBConnection {
 		finally {
 			closeAllConnections();
 		}
-	}
+	}*/
 	
-	
-	public void closeAllConnections() {
-		try {
-			if(statement != null)
-				statement.close();
-			if(prepStmnt != null)
-				prepStmnt.close();
-			if(resultSet != null)
-				resultSet.close();
-			if(connection != null) 
-				connection.close();
-			
-		} catch (SQLException e) {
-			System.out.println("Error in closing connection... " + e);
-		}
-	}
-	
-	public void closeStatement() {
-		try {
-			statement.close();
-		} catch (SQLException e) {
-			System.out.println("Error in closing statement " + e);
-		}
-	}
 }

@@ -9,9 +9,18 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
-import daos.BetalingDao;
+import daos.PaymentDao;
 
-public class PaymentDaoImpl implements BetalingDao<Payment> {
+/*
+ * Accesses the "Betaling"-table
+ * Table info:
+ * Colums: betaling_id(integer, not null), student_id(integer, not null), 
+ * 		   emne_id(integer, not null), belop(integer, not null), 
+ * 		   dato(timestamp w/o time zone, not null)
+ * 
+ */
+
+public class PaymentDaoImpl implements PaymentDao<Payment> {
 
 	DBConnection dbCon;
 	
@@ -19,11 +28,13 @@ public class PaymentDaoImpl implements BetalingDao<Payment> {
 		dbCon = new DBConnection(dBase, user, password);
 	}
 	
+	
+	
 	@Override
-	public void addBetaling(Payment betaling, Payment... extraBetaling) {
+	public void addPayment(Payment payment, Payment... extraPayment) {
 		String query = "insert into betaling(student_id, emne_id, belop, dato) values(?,?,?,?)";
 		
-		int extra = extraBetaling.length;
+		int extra = extraPayment.length;
 		for(int i = 0; i < extra-1; i++) {
 			query += ", values(?,?,?,?)";
 		}
@@ -32,7 +43,7 @@ public class PaymentDaoImpl implements BetalingDao<Payment> {
 			dbCon.establishConnection();
 			dbCon.prepStmnt = dbCon.connection.prepareStatement(query);
 			int prepIndex = 0;
-			for(Payment b : extraBetaling) {
+			for(Payment b : extraPayment) {
 				dbCon.prepStmnt.setInt(++prepIndex, b.getStudentID());
 				dbCon.prepStmnt.setInt(++prepIndex, b.getEmneID());
 				dbCon.prepStmnt.setInt(++prepIndex, b.getBelop());				
@@ -53,9 +64,10 @@ public class PaymentDaoImpl implements BetalingDao<Payment> {
 		
 	}
 
+	
 	@Override
-	public Payment getBetaling(int betalingID) {
-		String query = "select * from betaling where betaling_id=" + betalingID;
+	public Payment getPayment(int paymentId) {
+		String query = "select * from betaling where betaling_id=" + paymentId;
 		
 		try {
 			dbCon.establishConnection();
@@ -63,7 +75,7 @@ public class PaymentDaoImpl implements BetalingDao<Payment> {
 			dbCon.resultSet = dbCon.statement.executeQuery(query);
 			
 			if(!dbCon.resultSet.isBeforeFirst()) {
-				System.out.println("Betaling with id=" +betalingID+ " not found in database");
+				System.out.println("Betaling with id=" +paymentId+ " not found in database");
 				return null;
 			}
 			dbCon.resultSet.next();
@@ -86,7 +98,7 @@ public class PaymentDaoImpl implements BetalingDao<Payment> {
 	}
 	
 	@Override
-	public List<Payment> getStudentBetaling(int studentID) {
+	public List<Payment> getStudentPayments(int studentID) {
 		String query = "select b.betaling_id, e.emne_id, e.navn, b.belop, b.dato " 
 				+ "from betaling b " 
 				+ "join emner e " 
@@ -125,13 +137,13 @@ public class PaymentDaoImpl implements BetalingDao<Payment> {
 	}
 
 	@Override
-	public void updateBetaling(Payment betaling) {
+	public void updatePayment(Payment betaling) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void deleteBetaling(int betalingID) {
+	public void deletePayment(int betalingID) {
 		String query = "delete from betaling where betaling_id=" +betalingID;
 		
 		dbCon.establishConnection();
@@ -147,40 +159,6 @@ public class PaymentDaoImpl implements BetalingDao<Payment> {
 			dbCon.closeAllConnections();
 		}
 		
-	}
-
-	public void something() {
-		DBConnection dbCon = new DBConnection("jdbc:postgresql://localhost:5432/test", "postgres", "themaskguy999");
-		String query = "select student_id, dato from betaling where student_id=1";
-		try {
-			dbCon.establishConnection();
-			dbCon.statement = dbCon.connection.createStatement();
-			dbCon.resultSet = dbCon.statement.executeQuery(query);
-			
-			if(dbCon.resultSet.isBeforeFirst()) {
-				dbCon.resultSet.next();
-				Timestamp date1 = dbCon.resultSet.getTimestamp("dato");
-				dbCon.resultSet.next();
-				Timestamp date2 = dbCon.resultSet.getTimestamp("dato");
-				LocalDateTime lastPayment = date2.toLocalDateTime();
-				LocalDateTime now = LocalDateTime.now();
-				Duration duration = Duration.between(lastPayment, now);
-				long diff = duration.toDays();
-				System.out.println("Diff = " + diff);
-				System.out.println(date2 + ", " + lastPayment);
-				if(diff >= 30) {
-					System.out.println("Time to pay");
-				}
-				 
-				
-			}
-		}catch(SQLException e) {
-			System.out.println("Something went wrong... ");
-			e.printStackTrace();
-		}
-		finally {
-			dbCon.closeAllConnections();
-		}
 	}
 
 	@Override

@@ -1,10 +1,15 @@
 package jdbc_layer;
 import java.sql.SQLException;
 
-import daos.EmneDao;
+import daos.SubjectDao;
 import top_layer.Subject;
 
-public class SubjectDaoImpl implements EmneDao<Subject> {
+/*
+ * Accesses the "emner"-table.
+ * Table info:
+ * Columns: emne_id(integer, not null), navn(char, not null)
+ */
+public class SubjectDaoImpl implements SubjectDao<Subject> {
 	
 	private DBConnection dbCon;
 	public SubjectDaoImpl(String dBase, String user, String password) {
@@ -12,7 +17,7 @@ public class SubjectDaoImpl implements EmneDao<Subject> {
 	}
 
 	@Override
-	public void addEmne(Subject emne) {
+	public void addSubject(Subject emne) {
 		String query = "insert into emner(navn) values(?)";
 		
 		try {
@@ -35,7 +40,7 @@ public class SubjectDaoImpl implements EmneDao<Subject> {
 	}
 
 	@Override
-	public void updateEmne(Subject emne) {
+	public void updateSubject(Subject emne) {
 		String query = "update emner set navn=?"
 				+ "where emne_id=" + emne.getID();
 		try {
@@ -60,8 +65,8 @@ public class SubjectDaoImpl implements EmneDao<Subject> {
 	}
 
 	@Override
-	public void deleteEmne(Subject emne) {
-		Subject emneInDB = getEmne(emne.getName());
+	public void deleteSubject(Subject emne) {
+		Subject emneInDB = getSubject(emne.getName());
 		String query = "delete from emner where navn=?";
 		
 		try {
@@ -83,7 +88,7 @@ public class SubjectDaoImpl implements EmneDao<Subject> {
 	}
 
 	@Override
-	public Subject getEmne(String emneName) {
+	public Subject getSubject(String emneName) {
 		String query = "select * from emner where navn=?";
 		try {
 			dbCon.establishConnection();

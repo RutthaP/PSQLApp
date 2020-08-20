@@ -8,6 +8,12 @@ import daos.StudentDao;
 import top_layer.Subject;
 import top_layer.Student;
 
+/*
+ * Accesses the "students"-table
+ * Table info:
+ * Columns: id(integer, not null), fornavn(char, not null), etternavn(char, not null)
+ */
+
 public class StudentDaoImpl implements StudentDao<Student>{
 	private String fornavn, etternavn;
 	private String klasse;
@@ -128,8 +134,8 @@ public class StudentDaoImpl implements StudentDao<Student>{
 	}
 
 	@Override
-	public List<Student> getStudentsInEmne(Subject emne) {
-		String query = "select se.student_id, s.fornavn, s.etternavn " //se.emne_id, e.navn
+	public List<Student> getStudentsInSubject(Subject emne) {
+		String query = "select se.student_id, s.fornavn, s.etternavn " 
 				+ "from students s "
 				+ "join student_emner se on s.id = se.student_id "
 				+ "join emner e on se.emne_id = e.emne_id "
@@ -169,7 +175,7 @@ public class StudentDaoImpl implements StudentDao<Student>{
 	}
 
 	@Override
-	public void addStudentToEmne(Student student, Subject emne) {
+	public void addStudentToSubject(Student student, Subject emne) {
 		String relQuery = "insert into student_emner(student_id, emne_id, emne_start) "
 					+ "values(?, ?, now())";
 		try {

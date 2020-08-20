@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Scanner;
 
-import daos.BetalingDao;
-import daos.EmneDao;
+import daos.PaymentDao;
+import daos.SubjectDao;
 import daos.StudentDao;
 import jdbc_layer.PaymentDaoImpl;
 import jdbc_layer.SubjectDaoImpl;
@@ -17,86 +17,82 @@ import top_layer.Subject;
 import top_layer.Student;
 
 public class Main {
-	public static void main(String[] args) {
-		System.out.println("Working?");
-		
-		String[] result = readFile("C:\\Users\\Ruttharakan\\Documents\\UNI\\Projects\\SqlApp\\src\\pswrd.txt");
+	
+	/*
+	 * Finds connection info using a text file that consists of 3 lines,
+	 * (1) database url
+	 * (2) username
+	 * (3) password
+	 * 
+	 */
+	
+	// TODO Lag en database med den seneste betalingen for hver student
+	
+	public static void main(String[] args) {	
+		String[] result = null;
+		try {
+			result = readFile("C:\\Users\\Ruttharakan\\Documents\\UNI\\Projects\\SqlApp\\src\\pswrd.txt");
+		} catch (FileNotFoundException e) {
+			System.out.println("Password file not found " + e);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		String dBase = result[0];
 		String user = result[1];
 		String password = result[2];
 		
 		StudentDao<Student> studentDao = new StudentDaoImpl(dBase, user, password);
-		EmneDao<Subject> emneDao = new SubjectDaoImpl(dBase, user, password);
-		BetalingDao<Payment> betalingDao = new PaymentDaoImpl(dBase, user, password);
+		SubjectDao<Subject> emneDao = new SubjectDaoImpl(dBase, user, password);
+		PaymentDao<Payment> betalingDao = new PaymentDaoImpl(dBase, user, password);
 		
-		studentDao.getStudent("Sam");
+		/****  TESTING  ****/
 		
+		// Gets student named Sam, should not be in system
+		Student sam = studentDao.getStudent("Sam");
+		
+		// Get students in subject R2
 		Subject r2 = new Subject();
 		r2.setName("R2");
-		for (Student s : studentDao.getStudentsInEmne(r2)){
+		for (Student s : studentDao.getStudentsInSubject(r2)){
 			System.out.println(s);
 		}
 		
-		Student s1 = studentDao.getStudent("Singalam");
-		studentDao.addStudentToEmne(s1, emneDao.getEmne("Kjemi1"));
 		
+		// Add student to non existing subject
+		Student s1 = studentDao.getStudent("Singalam");
+		studentDao.addStudentToSubject(s1, emneDao.getSubject("Kjemi1"));
+		
+		
+		// Gets student named Ruttharakan, should get result
 		Student ruttha = studentDao.getStudent("Ruttharakan");
 		System.out.println(ruttha.getID());
-		for(Payment b : betalingDao.getStudentBetaling(ruttha.getID())) {
+		for(Payment b : betalingDao.getStudentPayments(ruttha.getID())) {
 			System.out.println(b);
 		}
 		
-		/* 
-		 * Jobb med mer exception handling - NullPointerException
-		 */
+		// Add subject
+		Subject f11 = new Subject();
+		f11.setName("Fysikk1");
+		emneDao.addSubject(f11);
 		
-		// TODO betaling for flere mnder samtidig. Kanskje legge inn et beløp, så vil programmet kalkulere
-		// hvor mange mnder det betales for. Men noen ganger blir det gitt discounts, så kanskje ikke gjør det.
-		
-		// TODO Lag en database med den seneste betalingen for hver student
-		
-		
-		//Emne f1 = new Emne();
-		//f1.setName("Fysikk1");
-		//emneDao.addEmne(f1);
-		
-		//Emne f3 = new Emne();
-		//f3.setName("Fysikk2");
-		//emneDao.addEmne(f3);
-		
-		Subject f1 = emneDao.getEmne("Fysikk1");
-		System.out.println(f1);
-		
-		/*Student s2 = new Student();
-		s2.setFornavn("Jallaneser");
-		s2.setEtternavn("Helvete");
-		studentDao.addStudent(s2);*/
-		
-		/* Add multiple payments */
-		//Betaling one = new Betaling();
-		//one.setBelop(500);
-		//one.setEmneID(3);
-		//one.setStudentID(3);
-		
+		// Get subject
+		Subject f1 = emneDao.getSubject("Fysikk1");
+		System.out.println(f1.getName());		
 		
 	}
 	
 	
-	private static String[] readFile(String path) {
+	private static String[] readFile(String path) throws Exception {
 		String[] result = new String[3];
 		File file = new File(path);
-		Scanner sc = null;
-		try {
-			sc = new Scanner(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+		Scanner sc =  new Scanner(file);		
 		
 		int i = 0;
 		while(sc.hasNextLine()) {
 			result[i++] = sc.nextLine();
 		}
 		
+		sc.close();
 		return result;
 	}
 	
