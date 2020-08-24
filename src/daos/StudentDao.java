@@ -6,8 +6,8 @@ import top_layer.Student;
 
 public interface StudentDao {
 	public boolean addStudent(Student student);
-	public List<Student> getStudent(String firstName);	
-	public List<Student> getStudent(String firstName, String surname);		
+	public List<Student> getStudent(Student student);	
+	//public List<Student> getStudent(String firstName, String surname);		
 	public boolean updateStudent(Student student);
 	public boolean deleteStudent(Student student);
 	
