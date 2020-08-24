@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Scanner;
 
 import daos.PaymentDao;
@@ -31,7 +32,7 @@ public class Main {
 	public static void main(String[] args) {	
 		String[] result = null;
 		try {
-			result = readFile("C:\\Users\\Ruttharakan\\Documents\\UNI\\Projects\\SqlApp\\src\\pswrd.txt");
+			result = Helper.readFile("C:\\Users\\Ruttharakan\\Documents\\UNI\\Projects\\SqlApp\\src\\pswrd.txt");
 		} catch (FileNotFoundException e) {
 			System.out.println("Password file not found " + e);
 		} catch (Exception e) {
@@ -41,13 +42,53 @@ public class Main {
 		String user = result[1];
 		String password = result[2];
 		
-		StudentDao<Student> studentDao = new StudentDaoImpl(dBase, user, password);
-		SubjectDao<Subject> emneDao = new SubjectDaoImpl(dBase, user, password);
-		PaymentDao<Payment> betalingDao = new PaymentDaoImpl(dBase, user, password);
+		StudentDao studentDAO = new StudentDaoImpl(dBase, user, password);
+		SubjectDao emneDao = new SubjectDaoImpl(dBase, user, password);
+		PaymentDao betalingDao = new PaymentDaoImpl(dBase, user, password);
+		
+		Main mainProgram = new Main();
+		
+		Scanner sc = new Scanner(System.in);
+		
+		String input = null;
+		
+		boolean canExit = false;
+		
+		while(canExit == false) {
+			System.out.println("1. Se antall studenter\n" 
+							 + "2. Legg til student\n"
+							 + "3. Student info");
+			
+			input = sc.nextLine();
+
+			if(input.equals("Exit") || input.equals("exit")) {
+				canExit = true;
+				System.out.println("Bye");
+			}
+			
+			switch (input) {
+			case "1":
+				List<Student> allStudents = studentDAO.getAllStudents();
+				for(Student s : allStudents) {
+					System.out.println(s.getID() +": "+ s.getFornavn() +" "+ s.getEtternavn() 
+					+", Emne: " + s.getSubject().getName());
+				}
+				break;
+				
+			case "2":				
+				Student newStudent = mainProgram.getStudentInfo(sc);
+				studentDAO.addStudent(newStudent);
+				break;
+			case "3":
+			
+				break;
+			}
+			
+		}
 		
 		/****  TESTING  ****/
 		
-		// Gets student named Sam, should not be in system
+		/*// Gets student named Sam, should not be in system
 		Student sam = studentDao.getStudent("Sam");
 		
 		// Get students in subject R2
@@ -77,23 +118,53 @@ public class Main {
 		
 		// Get subject
 		Subject f1 = emneDao.getSubject("Fysikk1");
-		System.out.println(f1.getName());		
+		System.out.println(f1.getName());	
 		
-	}
-	
-	
-	private static String[] readFile(String path) throws Exception {
-		String[] result = new String[3];
-		File file = new File(path);
-		Scanner sc =  new Scanner(file);		
 		
-		int i = 0;
-		while(sc.hasNextLine()) {
-			result[i++] = sc.nextLine();
+		// Add student
+		Student s2 = new Student();
+		s2.setFornavn("Singalam");
+		s2.setEtternavn("2");
+		studentDao.addStudent(s2);
+		*/
+		
+		/*Student[] students = studentDao.getStudent("Singalam", "2");
+		for(Student s : students) {
+			System.out.println(s.getID() + ": " + s.getFornavn() + " " + s.getEtternavn());
+		}
+		System.out.println();
+		
+		Student[] students2 = studentDao.getStudent("Singalam");
+		for(Student s : students2) {
+			System.out.println(s.getID() + ": " + s.getFornavn() + " " + s.getEtternavn());
+		}
+		System.out.println();
+		
+		Student[] students3 = studentDao.getStudent("Ruttharakan");
+		for(Student s : students3) {
+			System.out.println(s.getID() + ": " + s.getFornavn() + " " + s.getEtternavn());
 		}
 		
-		sc.close();
-		return result;
+		// Add payment
+		Payment p1 = new Payment();*/
+		
 	}
-	
+
+	private Student getStudentInfo(Scanner sc) {
+		System.out.println("Navn?");
+		String name = sc.nextLine();
+		
+		String[] bothNames = name.split(" ");
+		
+		Student newStudent = new Student();
+		if(bothNames.length == 1) {
+			newStudent.setFornavn(bothNames[0]);
+		}
+		else if(bothNames.length == 2) {
+			newStudent.setFornavn(bothNames[0]);
+			newStudent.setEtternavn(bothNames[1]);
+		}
+		
+		return newStudent;
+	}
 }
