@@ -20,7 +20,7 @@ import daos.PaymentDao;
  * 
  */
 
-public class PaymentDaoImpl implements PaymentDao<Payment> {
+public class PaymentDaoImpl implements PaymentDao {
 
 	DBConnection dbCon;
 	

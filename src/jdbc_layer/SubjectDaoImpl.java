@@ -9,7 +9,7 @@ import top_layer.Subject;
  * Table info:
  * Columns: emne_id(integer, not null), navn(char, not null)
  */
-public class SubjectDaoImpl implements SubjectDao<Subject> {
+public class SubjectDaoImpl implements SubjectDao {
 	
 	private DBConnection dbCon;
 	public SubjectDaoImpl(String dBase, String user, String password) {

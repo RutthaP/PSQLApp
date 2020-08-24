@@ -14,7 +14,7 @@ import top_layer.Student;
  * Columns: id(integer, not null), fornavn(char, not null), etternavn(char, not null)
  */
 
-public class StudentDaoImpl implements StudentDao<Student>{
+public class StudentDaoImpl implements StudentDao {
 	private String fornavn, etternavn;
 	private String klasse;
 	private int studentID;
@@ -25,27 +25,74 @@ public class StudentDaoImpl implements StudentDao<Student>{
 		dbCon = new DBConnection(dBase, user, password);
 	}
 	
+	
 	@Override
-	public Student getStudent(String navn) {
-		String query = "select * from students where fornavn=? or etternavn=?";		
+	public List<Student> getStudent(Student student) {
+		String query = "select * from students where fornavn=?";
 		try {
+			String firstName = student.getFornavn();
+			String surname = null;
+			if(student.getEtternavn() != null) {
+				surname = student.getEtternavn();
+			}
+			
 			dbCon.establishConnection();
 			dbCon.prepStmnt = dbCon.connection.prepareStatement(query);
-			dbCon.prepStmnt.setString(1, navn);
-			dbCon.prepStmnt.setString(2, navn);
+			dbCon.prepStmnt.setString(1, firstName);
 			dbCon.resultSet = dbCon.prepStmnt.executeQuery();
 			
 			if(!dbCon.resultSet.isBeforeFirst()) {
 				System.out.println("Student not found in system");
 				return null;
 			}
-			dbCon.resultSet.next();
-			Student s = new Student();
-			s.setID(dbCon.resultSet.getInt("id"));
-			s.setFornavn(dbCon.resultSet.getString("fornavn"));
-			s.setEtternavn(dbCon.resultSet.getString("etternavn"));
 			
-			return s;
+			List<Student> students = new ArrayList<Student>(); 
+			
+			while(dbCon.resultSet.next()) {
+				Student s = new Student();
+				s.setID(dbCon.resultSet.getInt("id"));
+				s.setFornavn(dbCon.resultSet.getString("fornavn"));
+				s.setEtternavn(dbCon.resultSet.getString("etternavn"));
+				students.add(s);
+			}
+			
+			return students;
+			
+		}catch(SQLException e) {
+			System.out.println("Error getting student");
+			return null;
+		}
+		finally {
+			dbCon.closeAllConnections();
+		}
+	}
+	
+	/*@Override
+	public List<Student> getStudent(String firstName, String surname) {
+		String query = "select * from students where fornavn=? and etternavn=?";		
+		try {
+			dbCon.establishConnection();
+			dbCon.prepStmnt = dbCon.connection.prepareStatement(query);
+			dbCon.prepStmnt.setString(1, firstName);
+			dbCon.prepStmnt.setString(2, surname);
+			dbCon.resultSet = dbCon.prepStmnt.executeQuery();
+			
+			if(!dbCon.resultSet.isBeforeFirst()) {
+				System.out.println("Student not found in system");
+				return null;
+			}
+			
+			List<Student> students = new ArrayList<Student>();
+			while(dbCon.resultSet.next()) {
+				Student s = new Student();
+				s.setID(dbCon.resultSet.getInt("id"));
+				s.setFornavn(dbCon.resultSet.getString("fornavn"));
+				s.setEtternavn(dbCon.resultSet.getString("etternavn"));
+				students.add(s);
+			}
+			
+			return students;
+			
 		} catch (SQLException e) {
 			System.out.println("Error getting student.   " + e);
 			return null;
@@ -53,7 +100,7 @@ public class StudentDaoImpl implements StudentDao<Student>{
 		finally {
 			dbCon.closeAllConnections();
 		}
-	}
+	}*/
 	
 	
 	
@@ -90,7 +137,7 @@ public class StudentDaoImpl implements StudentDao<Student>{
 
 	@Override
 	public boolean deleteStudent(Student student) {
-		Student studentInDB = getStudent(student.getFornavn());
+		/*Student studentInDB = getStudent(student.getFornavn());
 		String query = "delete from students where id=" + studentInDB.getID();
 		try {
 			dbCon.statement = dbCon.connection.createStatement();
@@ -102,7 +149,7 @@ public class StudentDaoImpl implements StudentDao<Student>{
 			System.out.println("Successfully deleted student with id = " + studentInDB.getID());
 		} catch (SQLException e) {
 			System.out.println("Error in deletion of student with id = " + studentInDB.getID() + "   " + e);
-		}
+		}*/
 		
 		return false;
 	}
@@ -125,6 +172,9 @@ public class StudentDaoImpl implements StudentDao<Student>{
 			System.out.println("Added student " + student.getFornavn());
 		} catch (SQLException e) {
 			System.out.println("Error adding student.   " + e);
+			return false;
+		} catch (NullPointerException e) {
+			System.out.println(e);
 			return false;
 		}
 		finally {
@@ -175,18 +225,18 @@ public class StudentDaoImpl implements StudentDao<Student>{
 	}
 
 	@Override
-	public void addStudentToSubject(Student student, Subject emne) {
+	public void addStudentToSubject(Student student, Subject subject) {
 		String relQuery = "insert into student_emner(student_id, emne_id, emne_start) "
 					+ "values(?, ?, now())";
 		try {
 			dbCon.establishConnection();
 			dbCon.prepStmnt = dbCon.connection.prepareStatement(relQuery);
 			dbCon.prepStmnt.setInt(1, student.getID());
-			dbCon.prepStmnt.setInt(2, emne.getID());
+			dbCon.prepStmnt.setInt(2, subject.getID());
 			dbCon.prepStmnt.execute();
-			System.out.println("Added emne with id " + emne.getID() + " to student " + student.getID());
+			System.out.println("Added emne with id " + subject.getID() + " to student " + student.getID());
 		} catch (SQLException e) {
-			System.out.println("Error adding emne with id " + emne.getID() + " to student " + 
+			System.out.println("Error adding emne with id " + subject.getID() + " to student " + 
 					student.getID() + ".   " + e);
 		} catch (NullPointerException e) {
 			System.out.println();
@@ -195,5 +245,48 @@ public class StudentDaoImpl implements StudentDao<Student>{
 			dbCon.closeAllConnections();
 		}		
 	}
+
+
+	@Override
+	public List<Student> getAllStudents() {
+		String query = "select se.student_id, s.fornavn, s.etternavn, e.emne_id, e.navn from students s " + 
+				"left join student_emner se on s.id = se.student_id " + 
+				"left join emner e on se.emne_id = e.emne_id";
+		
+		try {
+			dbCon.establishConnection();
+			dbCon.statement = dbCon.connection.createStatement();
+			dbCon.resultSet = dbCon.statement.executeQuery(query);
+			
+			if(! dbCon.resultSet.isBeforeFirst()) {
+				System.out.println("No students have subjects");
+				return null;
+			}
+			
+			List<Student> data = new ArrayList<Student>();
+			while(dbCon.resultSet.next()) {
+				Student s = new Student();
+				s.setID(dbCon.resultSet.getInt("student_id"));
+				s.setFornavn(dbCon.resultSet.getString("fornavn"));
+				s.setEtternavn(dbCon.resultSet.getString("etternavn"));
+				
+				Subject sub = new Subject();
+				sub.setID(dbCon.resultSet.getInt("emne_id"));
+				sub.setName(dbCon.resultSet.getString("navn"));
+				
+				s.setSubject(sub);
+				data.add(s);
+			}
+			return data;
+			
+		}catch(SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		finally {
+			dbCon.closeAllConnections();
+		}
+	}
+
 	
 }

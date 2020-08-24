@@ -4,6 +4,7 @@ import java.util.ArrayList;
 public class Student {
 	private String fornavn, etternavn;
 	private int id;
+	private Subject subject;
 	
 	public String getFornavn() {
 		return fornavn;
@@ -17,6 +18,14 @@ public class Student {
 		return etternavn;
 	}
 	
+	public Subject getSubject() {
+		return subject;
+	}
+
+	public void setSubject(Subject subject) {
+		this.subject = subject;
+	}
+
 	public void setEtternavn(String etternavn) {
 		this.etternavn = etternavn;
 	}
